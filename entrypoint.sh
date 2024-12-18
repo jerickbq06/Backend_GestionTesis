@@ -1,15 +1,20 @@
 #!/bin/bash
 
-# Esperar a que la base de datos esté lista
+# Esperar a que la base de datos esté lista (esto es opcional pero puede ser útil)
 echo "Esperando a que la base de datos esté lista..."
-until php artisan migrate --force; do
-  echo "Migraciones fallidas. Reintentando en 5 segundos..."
-  sleep 5
+until pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USERNAME; do
+  echo "Esperando conexión a la base de datos..."
+  sleep 2
 done
 
-# Ejecutar seeders
+# Ejecutar migraciones
+echo "Ejecutando migraciones..."
+php artisan migrate --force
+
+# Ejecutar los seeders si es necesario
 echo "Ejecutando seeders..."
 php artisan db:seed --force
 
-# Iniciar PHP-FPM
+# Ejecutar el servidor
+echo "Iniciando el servidor..."
 php-fpm
